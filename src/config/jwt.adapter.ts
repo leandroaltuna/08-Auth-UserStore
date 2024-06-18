@@ -23,7 +23,8 @@ export class JwtAdapter {
 
     }
 
-    static validateToken( token: string ) {
+    // <T> means it a generic o generico. It will return a promise of T type or null
+    static validateToken<T>( token: string ): Promise< T | null > {
 
         return new Promise( ( resolve ) => {
 
@@ -31,7 +32,7 @@ export class JwtAdapter {
 
                 if ( err ) return resolve( null );
 
-                resolve( decoded );
+                resolve( decoded as T );
 
             });
 
