@@ -1,7 +1,6 @@
 import { CustomError } from "../errors/custom.error";
 
 
-
 export class UserEntity {
 
     constructor(
@@ -18,7 +17,7 @@ export class UserEntity {
 
         const { id, _id, name, email, emailValidated, password, role, img } = object;
 
-        if ( !id && !_id ) {
+        if ( !_id && !id ) {
             throw CustomError.badRequest( 'Missing id' );
         }
 
@@ -28,7 +27,7 @@ export class UserEntity {
         if ( !password ) throw CustomError.badRequest( 'Missing password' );
         if ( !role ) throw CustomError.badRequest( 'Missing role' );
         
-        return new UserEntity( id || _id, name, email, emailValidated, password, role, img );
+        return new UserEntity( _id || id, name, email, emailValidated, password, role, img );
 
     }
 
