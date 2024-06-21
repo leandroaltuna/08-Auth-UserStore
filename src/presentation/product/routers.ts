@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { ProductController } from "./controller";
-import { AuthMiddleware } from "../middlewares/auth.middleware";
+import { AuthMiddleware } from "../middlewares";
 import { ProductService } from "../services";
-
 
 
 export class ProductRoutes {
