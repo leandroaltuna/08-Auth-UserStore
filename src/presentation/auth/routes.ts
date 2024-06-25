@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthController } from './controller';
 import { AuthService, EmailService } from '../services';
 import { envs } from '../../config';
+import { AuthDatasourceImpl, AuthRepositoryImpl } from '../../infraestructure';
 
 
 export class AuthRoutes {
@@ -15,8 +16,13 @@ export class AuthRoutes {
         envs.MAILER_SECRET_KEY,
         envs.SEND_EMAIL,
     );
-    const authService =  new AuthService( emailService );
-    const authController = new AuthController( authService );
+    // const authService =  new AuthService( emailService );
+    // const authController = new AuthController( authService );
+
+    const authDatasource = new AuthDatasourceImpl( emailService );
+    const authRepository = new AuthRepositoryImpl( authDatasource );
+    const authController = new AuthController( authRepository ); 
+    
 
     // Definir las rutas
     router.post('/login', authController.loginUser );

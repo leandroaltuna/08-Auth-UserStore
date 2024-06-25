@@ -1,14 +1,17 @@
 import { Request, Response } from "express";
-import { CustomError, LoginUserDto, RegisterUserDto } from "../../domain";
-import { AuthService } from "../services/auth.service";
+import { AuthRepository, CreateUser, CustomError, LoginUser, LoginUserDto, RegisterUserDto, ValidateEmailUser } from "../../domain";
+// import { AuthService } from "../services/auth.service";
 
 
 export class AuthController {
 
-
     // DI
+    // constructor(
+    //     public readonly authService: AuthService,
+    // ) {}
+   
     constructor(
-        public readonly authService: AuthService,
+        public readonly authRepository: AuthRepository,
     ) {}
 
     private handleError = ( error: unknown, res: Response ) => {
@@ -27,7 +30,12 @@ export class AuthController {
         const [ error, registerUserDto ] = RegisterUserDto.create( req.body );
         if ( error ) return res.status( 400 ).json({ error: error });
         
-        this.authService.registerUser( registerUserDto! )
+        // this.authService.registerUser( registerUserDto! )
+        //     .then( ( user ) => res.json( user ) )
+        //     .catch( error => this.handleError( error, res ) );
+
+        new CreateUser( this.authRepository )
+            .execute( registerUserDto! )
             .then( ( user ) => res.json( user ) )
             .catch( error => this.handleError( error, res ) );
 
@@ -38,8 +46,13 @@ export class AuthController {
         const [ error, loginUserDto ] = LoginUserDto.login( req.body );
         if ( error ) return res.status( 400 ).json({ error: error });
 
-        this.authService.loginUser( loginUserDto! )
-            .then( (user) => res.json( user ) )
+        // this.authService.loginUser( loginUserDto! )
+        //     .then( (user) => res.json( user ) )
+        //     .catch( error => this.handleError( error, res ) );
+
+        new LoginUser( this.authRepository )
+            .execute( loginUserDto! )
+            .then( ( user ) => res.json( user ) )
             .catch( error => this.handleError( error, res ) );
 
     }
@@ -48,8 +61,13 @@ export class AuthController {
 
         const { token } = req.params;
         
-        this.authService.validateEmail( token )
-            .then( () => res.json( 'Email was validated properly' ) )
+        // this.authService.validateEmail( token )
+        //     .then( () => res.json( 'Email was validated properly' ) )
+        //     .catch( error => this.handleError( error, res ) );
+
+        new ValidateEmailUser( this.authRepository )
+            .execute( token )
+            .then( () => res.json( `Email was validated properly` ) )
             .catch( error => this.handleError( error, res ) );
 
     }

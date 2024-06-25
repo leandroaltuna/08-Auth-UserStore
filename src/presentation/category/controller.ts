@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
-import { CategoryDto, CustomError, PaginationDto } from "../../domain";
-import { CategoryService } from "../services";
+import { CategoryDto, CategoryRepository, CreateCategory, CustomError, GetCategories, PaginationDto } from "../../domain";
+// import { CategoryService } from "../services";
 
 
 export class CategoryController {
 
     constructor(
-        private readonly categoryService: CategoryService,
+        // private readonly categoryService: CategoryService,
+        private readonly categoryRepository: CategoryRepository,
     ) {}
 
     private handleError = ( error: unknown, res: Response ) => {
@@ -25,7 +26,12 @@ export class CategoryController {
         const [ error, categoryDto ] = CategoryDto.create( req.body );
         if ( error ) return res.status( 400 ).json({ error: error });
 
-        this.categoryService.createCategory( categoryDto!, req.body.user )
+        // this.categoryService.createCategory( categoryDto!, req.body.user )
+        //     .then( newcategory => res.status( 201 ).json( newcategory ) )
+        //     .catch( error => this.handleError( error, res ) );
+
+        new CreateCategory( this.categoryRepository )
+            .execute( categoryDto!, req.body.user )
             .then( newcategory => res.status( 201 ).json( newcategory ) )
             .catch( error => this.handleError( error, res ) );
 
@@ -38,7 +44,12 @@ export class CategoryController {
 
         if ( error ) return res.status( 400 ).json({ error });
 
-        this.categoryService.getCategories( paginationDto! )
+        // this.categoryService.getCategories( paginationDto! )
+        //     .then( categories => res.json( categories ) )
+        //     .catch( error => this.handleError( error, res ) );
+
+        new GetCategories( this.categoryRepository )
+            .execute( paginationDto! )
             .then( categories => res.json( categories ) )
             .catch( error => this.handleError( error, res ) );
 

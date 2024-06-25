@@ -1,52 +1,17 @@
 import { JwtAdapter, bcryptAdapter, envs } from "../../config";
 import { UserModel } from "../../data";
-import { CustomError, LoginUserDto, RegisterUserDto, UserEntity } from "../../domain";
-import { EmailService } from "./email.service";
+import { AuthDatasource, AuthEntity, CustomError, LoginUserDto, RegisterUserDto, UserEntity } from "../../domain";
+import { EmailService } from "../../presentation/services/email.service";
 
 
+export class AuthDatasourceImpl implements AuthDatasource {
 
-export class AuthService {
-
-    //DI
     constructor(
         private readonly emailService: EmailService,
     ) {}
 
-    public async registerUser( registerUserDto: RegisterUserDto ) {
-
-        const existUser = await UserModel.findOne({ email: registerUserDto.email });
-        if ( existUser ) throw CustomError.badRequest( 'Email already exist' );
-
-        try {
-            
-            const user = new UserModel( registerUserDto );
-
-            // Encryptar password
-            user.password = bcryptAdapter.hash( registerUserDto.password );
-
-            await user.save();
-
-            // Email de verificacion
-            await this.sendEmailValidationLink( user.email );
-
-            const { password, ...showUser } = UserEntity.fromObject( user );
-
-            const token = await JwtAdapter.generateToken({ id: user.id });
-            if ( !token ) throw CustomError.internalServer( 'Error while creating JWT' );
-            
-            return {
-                user: showUser,
-                token: token,
-            };
-
-        } catch (error) {
-            throw CustomError.internalServer( `${ error }` );
-        }
-
-    }
-
-    public async loginUser( loginUserDto: LoginUserDto ) {
-
+    async loginUser(loginUserDto: LoginUserDto): Promise<AuthEntity> {
+        
         const user = await UserModel.findOne({ email: loginUserDto.email });
         if ( !user ) throw CustomError.badRequest( 'Email do not exist' );
 
@@ -59,13 +24,9 @@ export class AuthService {
         const token = await JwtAdapter.generateToken({ id: user.id, email: user.email });
         if ( !token ) throw CustomError.internalServer( 'Error while creating JWT' );
 
-        return {
-            user: showUser,
-            token: token,
-        }
+        return new AuthEntity( showUser, token.toString() );
 
     }
-
 
     private sendEmailValidationLink = async( email: string ) => {
 
@@ -92,8 +53,43 @@ export class AuthService {
 
     }
 
-    public validateEmail = async( token: string ) => {
+    async registerUser(registerUserDto: RegisterUserDto): Promise<AuthEntity> {
 
+        const existUser = await UserModel.findOne({ email: registerUserDto.email });
+        if ( existUser ) throw CustomError.badRequest( 'Email already exist' );
+
+        try {
+            
+            const user = new UserModel( registerUserDto );
+
+            // Encryptar password
+            user.password = bcryptAdapter.hash( registerUserDto.password );
+
+            await user.save();
+
+            // Email de verificacion
+            await this.sendEmailValidationLink( user.email );
+
+            const { password, ...showUser } = UserEntity.fromObject( user );
+
+            const token = await JwtAdapter.generateToken({ id: user.id, email: user.email });
+            if ( !token ) throw CustomError.internalServer( 'Error while creating JWT' );
+            
+            // return {
+            //     user: showUser,
+            //     token: token,
+            // };
+
+            return new AuthEntity( showUser, token.toString() );
+
+        } catch (error) {
+            throw CustomError.internalServer( `${ error }` );
+        }
+
+    }
+        
+    async validateEmail(token: string): Promise<Boolean> {
+        
         const payload = await JwtAdapter.validateToken( token );
         if ( !payload ) throw CustomError.unAuthorized( 'Invalid token' );
 
@@ -109,5 +105,5 @@ export class AuthService {
         return true;
 
     }
-
+    
 }

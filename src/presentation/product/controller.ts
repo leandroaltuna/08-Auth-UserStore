@@ -1,14 +1,17 @@
 import { Request, Response } from "express";
-import { CustomError, PaginationDto, ProductDto } from "../../domain";
-import { ProductService } from "../services";
-
+import { CreateProduct, CustomError, GetProducts, PaginationDto, ProductDto, ProductRepository } from "../../domain";
+// import { ProductService } from "../services";
 
 
 export class ProductController {
 
+    // constructor(
+    //     private readonly productService: ProductService,
+    // ){}
+
     constructor(
-        private readonly productService: ProductService,
-    ){}
+        private readonly productRepository: ProductRepository,
+    ) {}
 
     private handleError = ( error: unknown, res: Response ) => {
 
@@ -29,7 +32,12 @@ export class ProductController {
         });
         if ( error ) return res.status( 400 ).json({ error });
 
-        this.productService.createProduct( productDto! )
+        // this.productService.createProduct( productDto! )
+        //     .then( product => res.status( 201 ).json( product ) )
+        //     .catch( error => this.handleError( error, res ) );
+
+        new CreateProduct( this.productRepository )
+            .execute( productDto! )
             .then( product => res.status( 201 ).json( product ) )
             .catch( error => this.handleError( error, res ) );
 
@@ -42,10 +50,14 @@ export class ProductController {
 
         if ( error ) return res.status( 400 ).json({ error });
 
-        this.productService.getAllProducts( paginationDto! )
+        // this.productService.getAllProducts( paginationDto! )
+        //     .then( products => res.json( products ) )
+        //     .catch( error => this.handleError( error, res ) );
+
+        new GetProducts( this.productRepository )
+            .execute( paginationDto! )
             .then( products => res.json( products ) )
             .catch( error => this.handleError( error, res ) );
-
     }
 
 }

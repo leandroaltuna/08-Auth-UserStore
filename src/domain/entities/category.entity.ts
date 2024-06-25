@@ -1,27 +1,29 @@
-// import { CustomError } from "../errors/custom.error";
+import { CustomError } from "../errors/custom.error";
+import { UserEntity } from "./user.entity";
 
 
-// export class CategoryEntity {
+export class CategoryEntity {
 
-//     constructor(
-//         public id: string,
-//         public name: string,
-//         public available: boolean,
-//     ){}
+    constructor(
+        public id: string,
+        public name: string,
+        public available: boolean,
+        public user: UserEntity,
+    ){}
 
-//     static fromObject( object: { [key:string]: any } ) {
+    static fromObject( object: { [key:string]: any } ) {
 
-//         const { id, _id, name, available } = object;
+        const { id, _id, name, available, user } = object;
 
-//         if ( !id && !_id ) {
-//             throw CustomError.badRequest( 'Missing id' );
-//         }
+        if ( !id && !_id ) {
+            throw CustomError.badRequest( 'Missing id' );
+        }
 
-//         if ( !name ) throw CustomError.badRequest( 'Missing name' );
-//         if ( !available ) throw CustomError.badRequest( 'Missing email' );
+        if ( !name ) throw CustomError.badRequest( 'Missing name' );
+        if ( available === undefined ) throw CustomError.badRequest( 'Missing available field' );
        
-//         return new CategoryEntity( id || _id, name, available );
+        return new CategoryEntity( id || _id, name, available, user );
 
-//     }
+    }
 
-// }
+}
